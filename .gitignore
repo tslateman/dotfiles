@@ -1,0 +1,25 @@
+# Credentials and secrets
+.netrc
+.aws/
+.ssh/
+.env
+.env.*
+credentials*
+*_rsa
+*.pem
+*.key
+
+# History files (optional - uncomment if you want to share)
+.bash_history
+.zsh_history
+.node_repl_history
+.python_history
+
+# Local/machine-specific
+.DS_Store
+*.local
+
+# Application caches
+.npm/
+.cache/
+.local/

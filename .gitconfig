@@ -1,0 +1,24 @@
+# This is Git's per-user configuration file.
+[user]
+	name = Tommy Slater
+	email = t.r.slater@gmail.com
+[push]
+	default = current
+[branch]
+	autosetupmerge = true
+[checkout]
+	defaultRemote = origin
+	autosetupmerge = true
+[url "ssh://git@github.com/sparket-app"]
+	insteadOf = https://github.com/sparket-app
+[url "ssh://git@github.com/serverless-backend"]
+	insteadOf = https://github.com/serverless-backend
+[init]
+	defaultBranch = main
+[alias]
+  s = status
+	a = add
+	b = branch
+	co = commit
+	ch = checkout
+  amend = commit --amend
