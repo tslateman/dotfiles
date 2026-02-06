@@ -114,10 +114,18 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+# Lazy-load pyenv (deferred until first use)
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
-if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
+if [ -d "$PYENV_ROOT" ] && [ ! "$(whence -w __init_pyenv)" = "__init_pyenv: function" ]; then
+  declare -a __pyenv_commands=('pyenv' 'python' 'python3' 'pip' 'pip3')
+  function __init_pyenv() {
+    for i in "${__pyenv_commands[@]}"; do unalias $i 2>/dev/null; done
+    eval "$(pyenv init -)"
+    unset __pyenv_commands
+    unset -f __init_pyenv
+  }
+  for i in "${__pyenv_commands[@]}"; do alias $i='__init_pyenv && '$i; done
 fi
 
 # Defer initialization of nvm until nvm, node or a node-dependent command is
@@ -143,9 +151,6 @@ fi
 rmd () {
   pandoc $1 | lynx -stdin
 }
-
-# personal local util bins
-export PATH=$PATH:~/.local/bin
 
 # git aliases
 alias gcmt="git commit"
@@ -192,7 +197,7 @@ setopt HIST_BEEP
 # PyCharm
 alias charm="open -a PyCharm"
 
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# syntax-highlighting loaded via oh-my-zsh plugin
 
 # . "$HOME/.cargo/env"
 
