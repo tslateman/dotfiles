@@ -1,0 +1,105 @@
+set nocompatible              " be iMproved, required
+filetype off                  " required
+
+" Vundle requires cloning Vundle
+" git clone https://github.com/gmarik/Vundle.vim.git ~/.vim/plugin/Vundle.vim
+" set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/plugin/Vundle.vim
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+" The following are examples of different formats supported.
+" Keep Plugin commands between vundle#begin/end.
+" plugin on GitHub repo
+Plugin 'tpope/vim-fugitive'
+" plugin from http://vim-scripts.org/vim/scripts.html
+" Plugin 'L9'
+" Git plugin not hosted on GitHub
+"Plugin 'git://git.wincent.com/command-t.git'
+" git repos on your local machine (i.e. when working on your own plugin)
+"Plugin 'file:///home/gmarik/path/to/plugin'
+" The sparkup vim script is in a subdirectory of this repo called vim.
+" Pass the path to set the runtimepath properly.
+Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
+" Install L9 and avoid a Naming conflict if you've already installed a
+" different version somewhere else.
+" Plugin 'ascenator/L9', {'name': 'newL9'}
+
+" All of your Plugins must be added before the following line
+call vundle#end()            " required
+filetype plugin on           " required
+"
+" Brief help
+" :PluginList       - lists configured plugins
+" :PluginInstall    - installs plugins; append `!` to update or just :PluginUpdate
+" :PluginSearch foo - searches for foo; append `!` to refresh local cache
+" :PluginClean      - confirms removal of unused plugins; append `!` to auto-approve removal
+"
+" see :h vundle for more details or wiki for FAQ
+" Put your non-Plugin stuff after this line
+
+" Plug stuff, aka vim-plug
+call plug#begin('~/.vim/plugged')
+Plug 'tpope/vim-sensible'
+" Colorscheme
+Plug 'gryf/wombat256grf'
+Plug 'sheerun/vim-polyglot'
+
+" On-demand loading
+Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
+" Yaml formatting
+" Plug 'tarekbecker/vim-yaml-formatter'
+call plug#end()
+
+syntax on
+
+"colorscheme wombat256grf
+"colorscheme onedark
+"colorscheme slate
+"colorscheme molokai
+let g:zenburn_high_Contrast=1
+" For black background
+"let g:zenburn_transparent=1
+colorscheme zenburn
+
+" trim trailing whitespace on save
+autocmd BufWritePre * :%s/\s\+$//e
+
+set number
+
+" Indentation
+" show existing tab with 4 spaces width
+set tabstop=4
+set softtabstop=4
+" when indenting with '>', use 4 spaces width
+set shiftwidth=4
+" On pressing tab, insert 4 spaces
+set expandtab
+
+"set autoindent
+
+au BufNewFile,BufRead *.py
+    \ set tabstop=4 |
+    \ set softtabstop=4 |
+    \ set shiftwidth=4 |
+    \ set textwidth=79 |
+    \ set expandtab |
+    \ set autoindent |
+    \ set fileformat=unix
+
+au BufNewFile,BufRead *.js,*.html,*.css,*.sh
+    \ set tabstop=2 |
+    \ set softtabstop=2 |
+    \ set shiftwidth=2
+
+au BufNewFile,BufRead [Mm]akefile
+    \ set expandtab!
+
+" alias W and Wq for shift typos
+:command W w
+:command Wq wq
+
