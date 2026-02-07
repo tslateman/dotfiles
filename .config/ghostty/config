@@ -1,0 +1,70 @@
+# Ghostty Configuration - Matched to iTerm2 Setup
+
+# Font configuration (from iTerm2: DejaVuSansMonoPowerline 14)
+font-family = "DejaVu Sans Mono for Powerline"
+font-size = 14
+
+# Tokyo Night Theme
+background = 1a1b26
+foreground = c0caf5
+
+# Cursor
+cursor-color = c0caf5
+cursor-text = 1a1b26
+cursor-style = block
+
+# Selection
+selection-background = 33467c
+selection-foreground = c0caf5
+
+# ANSI Colors - Tokyo Night
+# Black
+palette = 0=#15161e
+# Red
+palette = 1=#f7768e
+# Green
+palette = 2=#9ece6a
+# Yellow
+palette = 3=#e0af68
+# Blue
+palette = 4=#7aa2f7
+# Magenta
+palette = 5=#bb9af7
+# Cyan
+palette = 6=#7dcfff
+# White
+palette = 7=#a9b1d6
+
+# Bright colors
+# Bright black
+palette = 8=#414868
+# Bright red
+palette = 9=#f7768e
+# Bright green
+palette = 10=#9ece6a
+# Bright yellow
+palette = 11=#e0af68
+# Bright blue
+palette = 12=#7aa2f7
+# Bright magenta
+palette = 13=#bb9af7
+# Bright cyan
+palette = 14=#7dcfff
+# Bright white
+palette = 15=#c0caf5
+
+# Window configuration
+window-padding-x = 8
+window-padding-y = 8
+window-decoration = true
+
+# Terminal settings (matching iTerm2)
+# 1000 scrollback lines
+scrollback-limit = 1000
+
+# Performance
+macos-titlebar-style = transparent
+
+# Font features
+font-feature = -liga
+font-feature = -calt

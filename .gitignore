@@ -34,3 +34,11 @@ credentials*
 
 # Neovim
 .config/nvim/.pytest_cache/
+
+# Zed (exclude conversations and prompts)
+.config/zed/conversations/
+.config/zed/prompts/
+.config/zed/themes/
+
+# gh (hosts.yml has auth tokens)
+.config/gh/hosts.yml
