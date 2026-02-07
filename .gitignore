@@ -31,3 +31,6 @@ credentials*
 
 # Karabiner backups
 .config/karabiner/automatic_backups/
+
+# Neovim
+.config/nvim/.pytest_cache/
