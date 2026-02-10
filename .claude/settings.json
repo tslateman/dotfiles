@@ -61,11 +61,29 @@
     "SessionStart": [],
     "PostToolUse": [
       {
-        "matcher": "Write",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
             "command": "jq -r '.tool_input.file_path // empty' | grep -E '\\.md$' | xargs -I {} prettier --write \"{}\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -E '\\.go$' | xargs -I {} gofmt -w \"{}\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -E '\\.rs$' | xargs -I {} rustfmt \"{}\""
           }
         ]
       }
@@ -91,7 +109,8 @@
     "claude-md-management@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
     "flow@local": true,
-    "bach@local": true
+    "bach@local": true,
+    "episodic-memory@superpowers-marketplace": true
   },
   "alwaysThinkingEnabled": true,
   "plugins": [
@@ -104,38 +123,6 @@
         "-y",
         "@upstash/context7-mcp"
       ]
-    },
-    "exa": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "exa-mcp-server"
-      ],
-      "env": {
-        "EXA_API_KEY": "YOUR_EXA_API_KEY_HERE"
-      }
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/Users/tslater"
-      ]
-    },
-    "github": {
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
-      }
     }
   },
   "feedbackSurveyState": {
