@@ -42,3 +42,26 @@ credentials*
 
 # gh (hosts.yml has auth tokens)
 .config/gh/hosts.yml
+
+# Claude Code (cache, session, telemetry — not config)
+.claude/.session-stats.json
+.claude/cache/
+.claude/chrome/
+.claude/debug/
+.claude/file-history/
+.claude/gsd-commands.disabled/
+.claude/history.jsonl
+.claude/hud/
+.claude/ide/
+.claude/image-cache/
+.claude/paste-cache/
+.claude/plans/
+.claude/plugins/
+.claude/projects/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/stats-cache.json
+.claude/statsig/
+.claude/tasks/
+.claude/telemetry/
+.claude/todos/

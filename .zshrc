@@ -184,6 +184,9 @@ alias oldvi='vi'
 alias vi='vim'
 . "/Users/tslater/.deno/env"
 
+# personal projects
+alias mt='molt'
+
 # Remove duplicate history
 setopt EXTENDED_HISTORY
 setopt HIST_EXPIRE_DUPS_FIRST
@@ -227,3 +230,5 @@ export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
 export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib -L/opt/homebrew/opt/libpq/lib"
 export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include -I/opt/homebrew/opt/libpq/include"
 
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.orbstack/bin:$PATH"

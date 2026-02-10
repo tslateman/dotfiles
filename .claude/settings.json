@@ -1,0 +1,144 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view:*)",
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(/usr/local/bin/npm view get-shit-done-cc version)",
+      "Bash(/opt/homebrew/bin/npm view get-shit-done-cc version)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(/opt/homebrew/bin/npx get-shit-done-cc --global)",
+      "mcp__acp__Bash",
+      "Bash(make help:*)",
+      "Bash(make test:*)",
+      "Bash(chmod:*)",
+      "WebSearch",
+      "Bash(python manage.py migrate:*)",
+      "Bash(find:*)",
+      "Bash(python manage.py:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(pytest:*)",
+      "Bash(make demo:*)",
+      "WebFetch(domain:www.djangoproject.com)",
+      "WebFetch(domain:unfoldadmin.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:www.notion.so)",
+      "mcp__notion__notion-fetch",
+      "WebFetch(domain:martinfowler.com)",
+      "mcp__notion__notion-update-page",
+      "Bash(xargs:*)",
+      "Bash(gh pr view:*)",
+      "Bash(echo:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(grep:*)",
+      "Bash(DJANGO_SETTINGS_MODULE=spectrace.settings python -m pytest:*)",
+      "Bash(cat:*)",
+      "Bash(npx get-shit-done-cc:*)",
+      "Bash(source .venv/bin/activate)",
+      "Bash(curl:*)",
+      "Bash(DJANGO_SETTINGS_MODULE=spectrace.settings python -c \"import django; django.setup\\(\\); from requirements.health import verify_linear_connection; print\\(''health import OK''\\)\")",
+      "Bash(DJANGO_SETTINGS_MODULE=spectrace.settings python:*)",
+      "Bash(pmset:*)",
+      "Bash(top:*)",
+      "Bash(ps:*)",
+      "Bash(ioreg:*)",
+      "Skill(gsd:progress)",
+      "Skill(gsd:execute-phase)",
+      "Skill(gsd:complete-milestone)",
+      "Bash(python3:*)",
+      "WebFetch(domain:django-ninja.dev)",
+      "WebFetch(domain:drf-spectacular.readthedocs.io)",
+      "Skill(gsd:audit-milestone)",
+      "Bash(uv pip install:*)",
+      "Bash(.venv/bin/pip:*)",
+      "Bash(../.venv/bin/python -m pytest requirements/tests/ -v --tb=short)",
+      "Bash(../.venv/bin/python:*)"
+    ],
+    "defaultMode": "default"
+  },
+  "hooks": {
+    "SessionStart": [],
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -E '\\.md$' | xargs -I {} prettier --write \"{}\""
+          }
+        ]
+      }
+    ],
+    "Stop": []
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "node ~/.claude/hud/omc-hud.mjs"
+  },
+  "enabledPlugins": {
+    "superpowers@superpowers-marketplace": false,
+    "context7@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "pyright-lsp@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "elements-of-style@superpowers-marketplace": false,
+    "frontend-design@claude-plugins-official": true,
+    "feature-dev@claude-plugins-official": true,
+    "plugin-dev@claude-plugins-official": true,
+    "agent-sdk-dev@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "flow@local": true,
+    "bach@local": true
+  },
+  "alwaysThinkingEnabled": true,
+  "plugins": [
+    "/Users/tslater/dev/flow/.claude-plugin"
+  ],
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "exa": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "exa-mcp-server"
+      ],
+      "env": {
+        "EXA_API_KEY": "YOUR_EXA_API_KEY_HERE"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/Users/tslater"
+      ]
+    },
+    "github": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "GITHUB_PERSONAL_ACCESS_TOKEN",
+        "ghcr.io/github/github-mcp-server"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "YOUR_GITHUB_TOKEN_HERE"
+      }
+    }
+  },
+  "feedbackSurveyState": {
+    "lastShownTime": 1765978818628
+  }
+}
