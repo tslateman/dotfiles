@@ -4,18 +4,19 @@ Personal configuration files for macOS.
 
 ## Contents
 
-| Config                           | Description                          |
-| -------------------------------- | ------------------------------------ |
-| `.zshrc`, `.zshenv`, `.zprofile` | Zsh shell configuration              |
-| `.gitconfig`                     | Git configuration                    |
-| `.config/nvim`                   | Neovim (LazyVim-based)               |
-| `.config/ghostty`                | Ghostty terminal (Tokyo Night theme) |
-| `.config/zed`                    | Zed editor settings                  |
-| `.config/gh`                     | GitHub CLI configuration             |
-| `.config/git/ignore`             | Global gitignore                     |
-| `.config/karabiner`              | Karabiner-Elements key remapping     |
-| `.claude`                        | Claude Code configuration            |
-| `.vim`                           | Vim configuration                    |
+| Config                           | Description                                   |
+| -------------------------------- | --------------------------------------------- |
+| `.zshrc`, `.zshenv`, `.zprofile` | Zsh shell configuration                       |
+| `.gitconfig`                     | Git configuration                             |
+| `.config/nvim`                   | Neovim (LazyVim-based)                        |
+| `.config/ghostty`                | Ghostty terminal (Tokyo Night theme)          |
+| `.config/zed`                    | Zed editor settings                           |
+| `.config/gh`                     | GitHub CLI configuration                      |
+| `.config/git/ignore`             | Global gitignore                              |
+| `.config/karabiner`              | Karabiner-Elements key remapping              |
+| `.claude`                        | Claude Code (commands, skills, hooks, agents) |
+| `.vim`                           | Vim configuration                             |
+| `.oh-my-zsh/custom/aliases.zsh`  | Custom shell aliases                          |
 
 ## Installation
 
