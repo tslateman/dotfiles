@@ -4,6 +4,7 @@
 set -e
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKUP_DIR="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 
 # --- Symlinks ---
 
@@ -13,6 +14,26 @@ symlink() {
     local src="$DOTFILES/$1"
     local dest="$HOME/$1"
     mkdir -p "$(dirname "$dest")"
+
+    # Already points to the right place — skip
+    if [ -L "$dest" ] && [ "$(readlink "$dest")" = "$src" ]; then
+        echo "  $1 (ok)"
+        return
+    fi
+
+    # Existing file or symlink that differs — back up and prompt
+    if [ -e "$dest" ] || [ -L "$dest" ]; then
+        echo "  $1 already exists at $dest"
+        read -rp "  Overwrite? Existing file will be backed up. [y/N] " answer
+        if [[ ! "$answer" =~ ^[Yy]$ ]]; then
+            echo "  Skipped $1"
+            return
+        fi
+        mkdir -p "$BACKUP_DIR/$(dirname "$1")"
+        mv "$dest" "$BACKUP_DIR/$1"
+        echo "  Backed up to $BACKUP_DIR/$1"
+    fi
+
     ln -sf "$src" "$dest"
     echo "  $1"
 }
