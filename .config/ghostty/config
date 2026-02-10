@@ -2,7 +2,7 @@
 
 # Font configuration (from iTerm2: DejaVuSansMonoPowerline 14)
 font-family = "DejaVu Sans Mono for Powerline"
-font-size = 14
+font-size = 18
 
 # Tokyo Night Theme
 background = 1a1b26
@@ -57,6 +57,7 @@ palette = 15=#c0caf5
 window-padding-x = 8
 window-padding-y = 8
 window-decoration = true
+maximize = true
 
 # Terminal settings (matching iTerm2)
 # 1000 scrollback lines
