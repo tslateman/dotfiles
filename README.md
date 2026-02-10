@@ -21,19 +21,12 @@ Personal configuration files for macOS.
 ## Installation
 
 ```bash
-# Clone the repo
 git clone https://github.com/tslateman/dotfiles.git ~/dev/dotfiles
 cd ~/dev/dotfiles
-
-# Install git hooks (secret scanning)
-./hooks/install.sh
-
-# Symlink configs (example)
-ln -sf ~/dev/dotfiles/.zshrc ~/.zshrc
-ln -sf ~/dev/dotfiles/.config/nvim ~/.config/nvim
-ln -sf ~/dev/dotfiles/.config/ghostty ~/.config/ghostty
-# ... etc
+./install.sh
 ```
+
+This symlinks all configs, installs oh-my-zsh plugins (Powerlevel10k, zsh-autosuggestions, zsh-syntax-highlighting), and sets up the gitleaks pre-commit hook.
 
 ## CLI Tools
 
