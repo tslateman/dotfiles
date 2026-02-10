@@ -114,19 +114,10 @@ source $ZSH/oh-my-zsh.sh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Lazy-load pyenv (deferred until first use)
+# pyenv
 export PYENV_ROOT="$HOME/.pyenv"
-export PATH="$PYENV_ROOT/bin:$PATH"
-if [ -d "$PYENV_ROOT" ] && [ ! "$(whence -w __init_pyenv)" = "__init_pyenv: function" ]; then
-  declare -a __pyenv_commands=('pyenv' 'python' 'python3' 'pip' 'pip3')
-  function __init_pyenv() {
-    for i in "${__pyenv_commands[@]}"; do unalias $i 2>/dev/null; done
-    eval "$(pyenv init -)"
-    unset __pyenv_commands
-    unset -f __init_pyenv
-  }
-  for i in "${__pyenv_commands[@]}"; do alias $i='__init_pyenv && '$i; done
-fi
+export PATH="$PYENV_ROOT/shims:$PATH"
+eval "$(pyenv init -)"
 
 # Defer initialization of nvm until nvm, node or a node-dependent command is
 # run. Ensure this block is only run once if .bashrc gets sourced multiple times
@@ -178,7 +169,7 @@ alias zshconfig="mate ~/.zshrc"
 
 # alias nvim='env -u VIMINIT nvim'
 alias nv='env -u VIMINIT nvim'
-alias python='python3'
+alias python='python3'  # TODO: remove — pyenv shims handle this
 alias py='python'
 alias oldvi='vi'
 alias vi='vim'
@@ -186,6 +177,9 @@ alias vi='vim'
 
 # personal projects
 alias mt='molt'
+alias mon='monarch'
+alias ml='monarch list'
+alias ms='monarch status'
 
 # Remove duplicate history
 setopt EXTENDED_HISTORY
@@ -232,3 +226,6 @@ export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include -I/opt/homebrew/opt/libpq
 
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.orbstack/bin:$PATH"
+
+# zoxide — frecency-based directory jumping
+eval "$(zoxide init zsh)"
