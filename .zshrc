@@ -177,9 +177,9 @@ alias vi='vim'
 
 # personal projects
 alias mt='molt'
-alias mon='monarch'
-alias ml='monarch list'
-alias ms='monarch status'
+alias mon='lore'
+alias ml='lore list'
+alias ms='lore status'
 
 # Remove duplicate history
 setopt EXTENDED_HISTORY
