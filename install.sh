@@ -69,6 +69,21 @@ else
   done
 fi
 
+# zoxide — installed via upstream script (not in brew)
+echo ""
+echo -e "${BOLD}Installing zoxide${RESET}"
+
+if command -v zoxide &>/dev/null; then
+  ok "zoxide ($(command -v zoxide))"
+else
+  echo -n "  Installing zoxide..."
+  if curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh &>/dev/null; then
+    ok "zoxide"
+  else
+    warn "zoxide — install failed, continuing"
+  fi
+fi
+
 # ============================================================
 # Phase 2: Symlink dotfiles
 # ============================================================
@@ -133,6 +148,7 @@ ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 clone_if_missing() {
     local repo="$1"
     local dest="$2"
+    mkdir -p "$(dirname "$dest")"
     if [[ ! -d "$dest" ]]; then
         echo -n "  Cloning $(basename "$dest")..."
         if git clone --depth 1 "$repo" "$dest" --quiet 2>/dev/null; then
