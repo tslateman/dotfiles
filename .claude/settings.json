@@ -1,4 +1,7 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(npm view:*)",
@@ -110,9 +113,17 @@
     "claude-code-setup@claude-plugins-official": true,
     "flow@local": true,
     "bach@local": true,
-    "episodic-memory@superpowers-marketplace": true
+    "episodic-memory@superpowers-marketplace": true,
+    "commit-commands@claude-code-plugins": true,
+    "frontend-design@claude-code-plugins": true,
+    "agent-sdk-dev@claude-code-plugins": true,
+    "plugin-dev@claude-code-plugins": true,
+    "duet@local": true,
+    "documents@wookstar-claude-plugins": true,
+    "ffmpeg@wookstar-claude-plugins": true
   },
   "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
   "plugins": [
     "/Users/tslater/dev/flow/.claude-plugin"
   ],
@@ -127,5 +138,6 @@
   },
   "feedbackSurveyState": {
     "lastShownTime": 1765978818628
-  }
+  },
+  "teammateMode": "tmux"
 }

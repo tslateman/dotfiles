@@ -50,7 +50,7 @@ done
 echo ""
 echo -e "${BOLD}Installing brew packages${RESET}"
 
-BREW_PACKAGES=(vale prettier markdownlint-cli lychee mani jq yq)
+BREW_PACKAGES=(vale prettier markdownlint-cli lychee mani jq yq fzf gitleaks)
 
 if ! command -v brew &>/dev/null; then
   warn "brew not found — skipping package installs"

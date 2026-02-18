@@ -119,6 +119,11 @@ export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/shims:$PATH"
 eval "$(pyenv init -)"
 
+# nix
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+  . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
 # Defer initialization of nvm until nvm, node or a node-dependent command is
 # run. Ensure this block is only run once if .bashrc gets sourced multiple times
 # by checking whether __init_nvm is a function.
@@ -231,3 +236,63 @@ export PATH="$HOME/.orbstack/bin:$PATH"
 
 # zoxide — frecency-based directory jumping
 (( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+
+# wm — tmux workspace manager (uses iTerm native integration when available)
+wm() {
+  local name="$1"
+  if [[ -z "$name" ]]; then
+    if [[ -n "$TMUX" ]]; then
+      tmux list-sessions
+    else
+      echo "usage: wm <bookmark>"
+    fi
+    return
+  fi
+
+  # Resolve directory from wd bookmarks
+  local dir
+  dir=$(awk -F: -v name="$name" '$1 == name { print $2; exit }' ~/.warprc 2>/dev/null)
+  dir="${dir/#\~/$HOME}"
+
+  if [[ -z "$dir" || ! -d "$dir" ]]; then
+    echo "wm: no wd bookmark '$name' (or directory missing)"
+    return 1
+  fi
+
+  if [[ -n "$TMUX" ]]; then
+    # Already inside tmux — switch or create
+    if tmux has-session -t "=$name" 2>/dev/null; then
+      tmux switch-client -t "=$name"
+    else
+      tmux new-session -d -s "$name" -c "$dir"
+      tmux switch-client -t "=$name"
+    fi
+  elif [[ "${TERM_PROGRAM:-}" == "iTerm.app" || "${LC_TERMINAL:-}" == "iTerm2" ]]; then
+    # iTerm — use -CC for native tab/split integration
+    if tmux has-session -t "=$name" 2>/dev/null; then
+      tmux -CC attach -t "=$name"
+    else
+      tmux -CC new-session -s "$name" -c "$dir"
+    fi
+  else
+    # Plain terminal — attach or create
+    if tmux has-session -t "=$name" 2>/dev/null; then
+      tmux attach -t "=$name"
+    else
+      tmux new-session -s "$name" -c "$dir"
+    fi
+  fi
+}
+
+# Tab completion for wm — completes from wd bookmarks
+_wm() {
+  local -a bookmarks
+  bookmarks=(${(f)"$(awk -F: '{ print $1 }' ~/.warprc 2>/dev/null)"})
+  _describe 'bookmark' bookmarks
+}
+compdef _wm wm
+
+# Local secrets (not committed)
+[[ -f ~/.env ]] && source ~/.env
+
+export CANARY_DIR=/Users/tslater/dev/canary

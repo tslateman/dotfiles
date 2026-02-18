@@ -65,3 +65,4 @@ credentials*
 .claude/tasks/
 .claude/telemetry/
 .claude/todos/
+.claude/teams/
