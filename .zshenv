@@ -18,5 +18,5 @@ export BUILDTOOLS_DIR=/Users/tslater/dev/infra/multi-repo-release
 # Secrets (not in git)
 [[ -f ~/.zshenv.local ]] && source ~/.zshenv.local
 
-# zsh highlights
-export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/opt/homebrew/share/zsh-syntax-highlighting/highlighters
+# zsh highlights (using oh-my-zsh plugin, no need to set highlighters dir)
+. "$HOME/.cargo/env"

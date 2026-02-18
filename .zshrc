@@ -202,9 +202,11 @@ alias charm="open -a PyCharm"
 export PATH="/Users/tslater/.codeium/windsurf/bin:$PATH"
 
 # chruby for jekyll
-source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
-source /opt/homebrew/opt/chruby/share/chruby/auto.sh
-chruby ruby-3.4.1
+if [[ -f /opt/homebrew/opt/chruby/share/chruby/chruby.sh ]]; then
+  source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
+  source /opt/homebrew/opt/chruby/share/chruby/auto.sh
+  chruby ruby-3.4.1
+fi
 
 # pnpm
 export PNPM_HOME="/Users/tslater/Library/pnpm"
@@ -228,4 +230,4 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.orbstack/bin:$PATH"
 
 # zoxide — frecency-based directory jumping
-eval "$(zoxide init zsh)"
+(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
