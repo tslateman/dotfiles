@@ -4,6 +4,7 @@ bach:~/dev/bach
 canary:~/dev/canary
 cassandra:~/ai-dev/cassandra
 cm:~/dev/canary/backend/credential-manager
+cnry:~/dev/canary/backend/canary
 control:~/dev/control
 ctrl:~/dev/control
 dev:~/dev
