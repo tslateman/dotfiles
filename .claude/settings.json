@@ -4,64 +4,34 @@
   },
   "permissions": {
     "allow": [
-      "Bash(npm view:*)",
-      "Bash(source ~/.nvm/nvm.sh)",
-      "Bash(/usr/local/bin/npm view get-shit-done-cc version)",
-      "Bash(/opt/homebrew/bin/npm view get-shit-done-cc version)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(/opt/homebrew/bin/npx get-shit-done-cc --global)",
-      "mcp__acp__Bash",
-      "Bash(make help:*)",
-      "Bash(make test:*)",
-      "Bash(chmod:*)",
-      "WebSearch",
-      "Bash(python manage.py migrate:*)",
-      "Bash(find:*)",
-      "Bash(python manage.py:*)",
-      "Bash(python -m json.tool:*)",
-      "Bash(pytest:*)",
-      "Bash(make demo:*)",
-      "WebFetch(domain:www.djangoproject.com)",
-      "WebFetch(domain:unfoldadmin.com)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(python:*)",
-      "WebFetch(domain:www.notion.so)",
-      "mcp__notion__notion-fetch",
-      "WebFetch(domain:martinfowler.com)",
-      "mcp__notion__notion-update-page",
-      "Bash(xargs:*)",
-      "Bash(gh pr view:*)",
-      "Bash(echo:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(grep:*)",
-      "Bash(DJANGO_SETTINGS_MODULE=spectrace.settings python -m pytest:*)",
-      "Bash(cat:*)",
-      "Bash(npx get-shit-done-cc:*)",
-      "Bash(source .venv/bin/activate)",
-      "Bash(curl:*)",
-      "Bash(DJANGO_SETTINGS_MODULE=spectrace.settings python -c \"import django; django.setup\\(\\); from requirements.health import verify_linear_connection; print\\(''health import OK''\\)\")",
-      "Bash(DJANGO_SETTINGS_MODULE=spectrace.settings python:*)",
-      "Bash(pmset:*)",
-      "Bash(top:*)",
-      "Bash(ps:*)",
-      "Bash(ioreg:*)",
-      "Skill(gsd:progress)",
-      "Skill(gsd:execute-phase)",
-      "Skill(gsd:complete-milestone)",
-      "Bash(python3:*)",
-      "WebFetch(domain:django-ninja.dev)",
-      "WebFetch(domain:drf-spectacular.readthedocs.io)",
-      "Skill(gsd:audit-milestone)",
-      "Bash(uv pip install:*)",
-      "Bash(.venv/bin/pip:*)",
-      "Bash(../.venv/bin/python -m pytest requirements/tests/ -v --tb=short)",
-      "Bash(../.venv/bin/python:*)"
+      "mcp__memory__*"
     ],
     "defaultMode": "default"
   },
+  "model": "sonnet",
   "hooks": {
-    "SessionStart": [],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/check-destructive"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/memory-hooks on-start 2>/dev/null",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
@@ -91,7 +61,62 @@
         ]
       }
     ],
-    "Stop": []
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/memory-hooks on-stop 2>/dev/null",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/memory-hooks advise 2>/dev/null",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/memory-hooks on-failure 2>/dev/null",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/memory-hooks pre-compact 2>/dev/null",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/tslater/.claude/bin/memory-hooks on-end 2>/dev/null",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",
@@ -128,6 +153,9 @@
     "/Users/tslater/dev/flow/.claude-plugin"
   ],
   "mcpServers": {
+    "memory": {
+      "command": "/Users/tslater/.claude/bin/memory"
+    },
     "context7": {
       "command": "npx",
       "args": [

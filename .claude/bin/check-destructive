@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# PreToolUse hook: block genuinely destructive bash commands
+# Scoped tight — err on the side of allowing
+# Patterns require a word boundary before/after "git" to avoid matching
+# git subcommand names embedded in commit messages or grep patterns.
+
+COMMAND=$(jq -r '.tool_input.command // empty' 2>/dev/null)
+[[ -z "$COMMAND" ]] && exit 0
+
+blocked_by=""
+
+# git reset --hard: discards all uncommitted changes
+[[ "$COMMAND" =~ (^|[[:space:]])git[[:space:]]+reset[[:space:]].*--hard ]] && blocked_by="git reset --hard"
+
+# git push --force (but not --force-with-lease, which is safer)
+if [[ "$COMMAND" =~ (^|[[:space:]])git[[:space:]]+push[[:space:]].*--force ]] && [[ ! "$COMMAND" =~ --force-with-lease ]]; then
+    blocked_by="git push --force"
+fi
+
+# git push -f (short flag)
+[[ "$COMMAND" =~ (^|[[:space:]])git[[:space:]]+push[[:space:]].*[[:space:]]-[a-zA-Z]*f([[:space:]]|$) ]] && blocked_by="git push -f"
+
+# git clean -f: deletes untracked files
+[[ "$COMMAND" =~ (^|[[:space:]])git[[:space:]]+clean[[:space:]].*-[a-zA-Z]*f ]] && blocked_by="git clean -f"
+
+# git branch -D: force-deletes a branch (not -d, which is safe)
+[[ "$COMMAND" =~ (^|[[:space:]])git[[:space:]]+branch[[:space:]].*-[a-zA-Z]*D([[:space:]]|$) ]] && blocked_by="git branch -D"
+
+# rm -rf / rm -fr: recursive force delete
+[[ "$COMMAND" =~ (^|[[:space:]])rm[[:space:]]+-[a-zA-Z]*r[a-zA-Z]*f ]] && blocked_by="rm -rf"
+[[ "$COMMAND" =~ (^|[[:space:]])rm[[:space:]]+-[a-zA-Z]*f[a-zA-Z]*r ]] && blocked_by="rm -rf"
+
+if [[ -n "$blocked_by" ]]; then
+    echo "Blocked ($blocked_by) — confirm to proceed."
+    exit 2
+fi
+
+exit 0
