@@ -124,6 +124,11 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 fi
 
+# direnv — auto-load .envrc when entering directories
+eval "$(direnv hook zsh)"
+
+export CANARY_DIR=/Users/tslater/dev/canary
+
 # Defer initialization of nvm until nvm, node or a node-dependent command is
 # run. Ensure this block is only run once if .bashrc gets sourced multiple times
 # by checking whether __init_nvm is a function.
@@ -165,7 +170,7 @@ alias gamd="git commit --amend"
 alias gref="git reflog"
 alias gpl="git pull"
 alias gck="git checkout"
-alias gbr="git branch"
+alias gbr='git branch --show-current'
 
 # tab auto-completion git
 autoload -Uz compinit && compinit
@@ -178,13 +183,10 @@ alias python='python3'  # TODO: remove — pyenv shims handle this
 alias py='python'
 alias oldvi='vi'
 alias vi='vim'
-. "/Users/tslater/.deno/env"
+alias dk='docker'
 
-# personal projects
-alias mt='molt'
-alias mon='lore'
-alias ml='lore list'
-alias ms='lore status'
+# deno
+. "/Users/tslater/.deno/env"
 
 # Remove duplicate history
 setopt EXTENDED_HISTORY
@@ -198,6 +200,7 @@ setopt HIST_BEEP
 
 # PyCharm
 alias charm="open -a PyCharm"
+
 
 # syntax-highlighting loaded via oh-my-zsh plugin
 
@@ -294,5 +297,3 @@ compdef _wm wm
 
 # Local secrets (not committed)
 [[ -f ~/.env ]] && source ~/.env
-
-export CANARY_DIR=/Users/tslater/dev/canary

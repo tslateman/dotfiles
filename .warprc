@@ -10,6 +10,7 @@ ctrl:~/dev/control
 dev:~/dev
 grove:~/ai-dev/grove
 iface:~/dev/interface-design
+k8s:~/dev/infra/canary-kubernetes
 limi:~/dev/liminal
 liminal:~/dev/liminal
 mind:~/Documents/Mind
