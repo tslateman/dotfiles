@@ -44,7 +44,9 @@ credentials*
 .config/gh/hosts.yml
 
 # Claude Code (cache, session, telemetry — not config)
+.claude/.credentials.json
 .claude/.session-stats.json
+.claude/backups/
 .claude/cache/
 .claude/chrome/
 .claude/debug/
@@ -54,6 +56,8 @@ credentials*
 .claude/hud/
 .claude/ide/
 .claude/image-cache/
+.claude/mcp-needs-auth-cache.json
+.claude/memory.sqlite*
 .claude/paste-cache/
 .claude/plans/
 .claude/plugins/
@@ -66,3 +70,10 @@ credentials*
 .claude/telemetry/
 .claude/todos/
 .claude/teams/
+.claude/*.log
+
+# Claude Code compiled memory binaries (installed via Engram/ClaudeMemory)
+.claude/bin/.memory-version
+.claude/bin/memory
+.claude/bin/memory-hooks
+.claude/bin/*.bundle/

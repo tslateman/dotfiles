@@ -6,7 +6,7 @@
     "allow": [
       "mcp__memory__*"
     ],
-    "defaultMode": "default"
+    "defaultMode": "bypassPermissions"
   },
   "model": "sonnet",
   "hooks": {
