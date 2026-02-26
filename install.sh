@@ -50,7 +50,16 @@ done
 echo ""
 echo -e "${BOLD}Installing brew packages${RESET}"
 
-BREW_PACKAGES=(vale prettier markdownlint-cli lychee mani jq yq fzf gitleaks)
+BREW_PACKAGES=(
+  # Dev tools
+  bat fd fzf gh gitleaks git-lfs glow just neovim ripgrep tmux tree wget
+  # Linting & formatting
+  vale prettier markdownlint-cli lychee pre-commit
+  # Data & orchestration
+  jq yq mani
+  # Shell
+  atuin btop direnv zoxide
+)
 
 if ! command -v brew &>/dev/null; then
   warn "brew not found — skipping package installs"
@@ -67,21 +76,6 @@ else
       fi
     fi
   done
-fi
-
-# zoxide — installed via upstream script (not in brew)
-echo ""
-echo -e "${BOLD}Installing zoxide${RESET}"
-
-if command -v zoxide &>/dev/null; then
-  ok "zoxide ($(command -v zoxide))"
-else
-  echo -n "  Installing zoxide..."
-  if curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh &>/dev/null; then
-    ok "zoxide"
-  else
-    warn "zoxide — install failed, continuing"
-  fi
 fi
 
 # ============================================================
