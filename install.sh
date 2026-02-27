@@ -132,6 +132,8 @@ symlink .config/gh
 symlink .config/git
 symlink .config/karabiner
 symlink .oh-my-zsh/custom/aliases.zsh
+symlink bin/dev-recent
+symlink bin/dev-dirty
 
 # --- oh-my-zsh plugins & theme ---
 echo ""

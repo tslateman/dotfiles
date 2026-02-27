@@ -1,0 +1,13 @@
+#!/bin/bash
+# Show dirty working trees across all ~/dev projects
+for dir in ~/dev/*/ ~/dev/forge/*/; do
+    [ -d "$dir/.git" ] || continue
+    name=$(echo "$dir" | sed "s|$HOME/dev/||;s|/$||")
+    changes=$(git -C "$dir" status --porcelain 2>/dev/null)
+    if [ -n "$changes" ]; then
+        count=$(echo "$changes" | wc -l | tr -d ' ')
+        echo "=== $name ($count changes) ==="
+        echo "$changes"
+        echo
+    fi
+done

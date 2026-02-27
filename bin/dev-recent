@@ -1,0 +1,10 @@
+#!/bin/bash
+# Show recent commits across all ~/dev projects
+# Usage: dev-recent [days]
+days="${1:-7}"
+for dir in ~/dev/*/ ~/dev/forge/*/; do
+    [ -d "$dir/.git" ] || continue
+    name=$(echo "$dir" | sed "s|$HOME/dev/||;s|/$||")
+    log=$(git -C "$dir" log --oneline --since="$days days ago" --no-merges 2>/dev/null | head -5)
+    [ -n "$log" ] && echo "=== $name ===" && echo "$log" && echo
+done
