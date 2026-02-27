@@ -78,6 +78,16 @@ else
   done
 fi
 
+# --- macOS defaults ---
+if [[ "$(uname)" == "Darwin" ]]; then
+  echo ""
+  echo -e "${BOLD}Setting macOS defaults${RESET}"
+
+  # Stop desktop reordering based on recent use
+  defaults write com.apple.dock mru-spaces -bool false && killall Dock
+  ok "Dock: disable desktop auto-reorder"
+fi
+
 # ============================================================
 # Phase 2: Symlink dotfiles
 # ============================================================
