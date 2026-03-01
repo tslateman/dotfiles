@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# Create project tmux sessions, then attach via iTerm2 -CC integration.
+# Existing sessions are left untouched.
+#
+# Usage:
+#   tmux-bootstrap        # create sessions + attach
+#   tmux-bootstrap --list # show what would be created
+#   tmux-bootstrap --help # show usage
+
+set -euo pipefail
+
+command -v tmux &>/dev/null || { echo "tmux not found" >&2; exit 1; }
+
+# ── Sessions ────────────────────────────────────────────────────────
+# name → starting directory
+declare -A SESSIONS=(
+  [mind]="$HOME/Documents/Mind"
+  [dev]="$HOME/dev"
+  [trek]="$HOME/dev"
+  [matrix]="$HOME/dev"
+  [yard]="$HOME/dev"
+)
+
+# Preferred tab order (iTerm2 renders in creation order)
+ORDER=(mind dev yard trek matrix)
+
+# ── Windows ─────────────────────────────────────────────────────────
+# session → space-separated window names (first window is created with session)
+declare -A WINDOWS=(
+  [mind]="FOCUS CAPTURE EXPLORE JUDGE DISTILL"
+  [dev]="CODE TEST OPS SCRATCH"
+  [trek]="RIKER SPOCK GEORDI UHURA CHEKOV"
+  [matrix]="NEO MORPHEUS TRINITY ORACLE TANK"
+  [yard]="LORE PRAXIS COUNCIL FLEETS FORGE"
+)
+
+# ── Validation ────────────────────────────────────────────────────────
+
+validate_config() {
+  local errors=0
+  for name in "${ORDER[@]}"; do
+    if [[ -z "${SESSIONS[$name]+x}" ]]; then
+      echo "Config error: '$name' in ORDER but missing from SESSIONS" >&2
+      errors=$((errors + 1))
+    fi
+  done
+  if ((errors > 0)); then
+    exit 1
+  fi
+}
+
+validate_config
+
+# ── Functions ───────────────────────────────────────────────────────
+
+session_exists() { tmux has-session -t "$1" 2>/dev/null; }
+
+create_sessions() {
+  local created=0
+  for name in "${ORDER[@]}"; do
+    dir="${SESSIONS[$name]}"
+    if session_exists "$name"; then
+      echo "  ✓ $name (exists)"
+    elif [[ ! -d "$dir" ]]; then
+      echo "  ✗ $name — directory not found: $dir"
+    else
+      local windows="${WINDOWS[$name]:-}"
+      if [[ -n "$windows" ]]; then
+        read -ra win_list <<< "$windows"
+        tmux new-session -d -s "$name" -n "${win_list[0]}" -c "$dir"
+        for win in "${win_list[@]:1}"; do
+          tmux new-window -t "$name" -n "$win" -c "$dir"
+        done
+        echo "  + $name → $dir (${win_list[*]})"
+      else
+        tmux new-session -d -s "$name" -c "$dir"
+        echo "  + $name → $dir"
+      fi
+      created=$((created + 1))
+    fi
+  done
+  echo ""
+  echo "$created session(s) created."
+}
+
+list_sessions() {
+  for name in "${ORDER[@]}"; do
+    dir="${SESSIONS[$name]}"
+    if session_exists "$name"; then
+      echo "  ✓ $name (running)"
+    elif [[ ! -d "$dir" ]]; then
+      echo "  ✗ $name — directory not found: $dir"
+    else
+      local windows="${WINDOWS[$name]:-}"
+      if [[ -n "$windows" ]]; then
+        echo "  · $name → $dir ($windows)"
+      else
+        echo "  · $name → $dir"
+      fi
+    fi
+  done
+}
+
+usage() {
+  echo "Usage: tmux-bootstrap [--list | --help]"
+  echo ""
+  echo "  (no args)  Create sessions and attach"
+  echo "  --list     Show session status without creating"
+  echo "  --help     Show this message"
+}
+
+# ── Main ────────────────────────────────────────────────────────────
+
+case "${1:-}" in
+  --list)
+    list_sessions
+    exit 0
+    ;;
+  --help|-h)
+    usage
+    exit 0
+    ;;
+  "")
+    ;; # fall through to create + attach
+  *)
+    echo "Unknown option: $1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
+
+echo "Creating sessions..."
+create_sessions
+
+echo ""
+if [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]]; then
+  echo "Attaching via iTerm2 integration..."
+  echo "  (Each session becomes a native iTerm2 window)"
+  for name in "${ORDER[@]}"; do
+    if session_exists "$name"; then
+      tmux -CC attach -t "$name" &
+    fi
+  done
+  wait
+  exit 0
+fi
+
+if [[ -n "${TMUX:-}" ]]; then
+  echo "Inside tmux: switching client to mind"
+  exec tmux switch-client -t mind
+fi
+
+echo "Attaching to mind..."
+exec tmux attach -t mind

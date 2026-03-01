@@ -144,6 +144,7 @@ symlink .config/karabiner
 symlink .oh-my-zsh/custom/aliases.zsh
 symlink bin/dev-recent
 symlink bin/dev-dirty
+symlink bin/tmux-bootstrap
 
 # --- oh-my-zsh plugins & theme ---
 echo ""
