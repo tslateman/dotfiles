@@ -1,0 +1,32 @@
+#!/bin/bash
+# Open a file in a new iTerm2 tab with glow (rendered markdown) or bat (everything else)
+# Usage: iterm-view <file> [line]
+# Intended for iTerm2 Semantic History (cmd+click)
+
+file="$1"
+line="${2:-1}"
+
+if [[ ! -f "$file" ]]; then
+    echo "File not found: $file" >&2
+    exit 1
+fi
+
+if [[ "$file" == *.md ]]; then
+    cmd="glow -p '${file//\'/\'\\\'\'}'"
+else
+    cmd="bat --highlight-line $line '${file//\'/\'\\\'\'}'"
+fi
+
+osascript - "$cmd" <<'APPLESCRIPT'
+on run argv
+    set cmd to item 1 of argv
+    tell application "iTerm2"
+        tell current window
+            create tab with default profile
+            tell current session
+                write text cmd
+            end tell
+        end tell
+    end tell
+end run
+APPLESCRIPT

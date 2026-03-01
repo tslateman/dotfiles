@@ -1,0 +1,1 @@
+ffmpeg -i input.mov -b:v 256k -bufsize 256k output.mov

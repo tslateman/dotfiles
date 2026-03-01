@@ -142,8 +142,12 @@ symlink .config/gh
 symlink .config/git
 symlink .config/karabiner
 symlink .oh-my-zsh/custom/aliases.zsh
-symlink bin/dev-recent
+symlink bin/convert-mov
+symlink bin/delete-merged-branches
 symlink bin/dev-dirty
+symlink bin/dev-recent
+symlink bin/iterm-edit
+symlink bin/iterm-view
 symlink bin/tmux-bootstrap
 
 # --- oh-my-zsh plugins & theme ---
@@ -191,7 +195,7 @@ echo -e "${BOLD}Cloning ecosystem repos${RESET}"
 
 GH_ORG="${GH_ORG:-tslateman}"
 GITHUB="git@github.com:$GH_ORG"
-CORE_REPOS=(lore neo mirror praxis tutor)
+CORE_REPOS=(lore praxis tutor)
 
 clone_ok=0
 clone_fail=0
