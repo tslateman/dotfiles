@@ -19,10 +19,12 @@ declare -A SESSIONS=(
   [trek]="$HOME/dev"
   [matrix]="$HOME/dev"
   [yard]="$HOME/dev"
+  [jam]="$HOME/dev"
+  [studio]="$HOME/dev"
 )
 
 # Preferred tab order (iTerm2 renders in creation order)
-ORDER=(mind dev yard trek matrix)
+ORDER=(mind dev yard trek matrix jam studio)
 
 # ── Windows ─────────────────────────────────────────────────────────
 # session → space-separated window names (first window is created with session)
@@ -32,6 +34,8 @@ declare -A WINDOWS=(
   [trek]="RIKER SPOCK GEORDI UHURA CHEKOV"
   [matrix]="NEO MORPHEUS TRINITY ORACLE TANK"
   [yard]="LORE PRAXIS COUNCIL FLEETS FORGE"
+  [jam]="LEAD BASS DRUMS KEYS VAMP"
+  [studio]="TRACK MIX BOOTH BOARD TAKE"
 )
 
 # ── Validation ────────────────────────────────────────────────────────
