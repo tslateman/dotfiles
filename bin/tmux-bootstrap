@@ -3,9 +3,10 @@
 # Existing sessions are left untouched.
 #
 # Usage:
-#   tmux-bootstrap        # create sessions + attach
-#   tmux-bootstrap --list # show what would be created
-#   tmux-bootstrap --help # show usage
+#   tmux-bootstrap             # create autostart sessions + attach
+#   tmux-bootstrap --start <n> # create and attach a single session
+#   tmux-bootstrap --list      # show all sessions and their status
+#   tmux-bootstrap --help      # show usage
 
 set -euo pipefail
 
@@ -23,7 +24,10 @@ declare -A SESSIONS=(
   [studio]="$HOME/dev"
 )
 
-# Preferred tab order (iTerm2 renders in creation order)
+# Sessions to create and attach on bootstrap (subset of SESSIONS)
+AUTOSTART=(mind dev)
+
+# All sessions in preferred tab order (iTerm2 renders in creation order)
 ORDER=(mind dev yard trek matrix jam studio)
 
 # ── Windows ─────────────────────────────────────────────────────────
@@ -38,7 +42,7 @@ declare -A WINDOWS=(
   [studio]="TRACK MIX BOOTH BOARD TAKE"
 )
 
-# ── Validation ────────────────────────────────────────────────────────
+# ── Validation ──────────────────────────────────────────────────────
 
 validate_config() {
   local errors=0
@@ -59,100 +63,143 @@ validate_config
 
 session_exists() { tmux has-session -t "$1" 2>/dev/null; }
 
-create_sessions() {
+is_autostart() {
+  local target="$1"
+  for name in "${AUTOSTART[@]}"; do
+    [[ "$name" == "$target" ]] && return 0
+  done
+  return 1
+}
+
+# Create a session with its configured windows (no-op if exists).
+# Returns 0 if created, 1 if already existed, 2 on error.
+ensure_session() {
+  local name="$1"
+  local dir="${SESSIONS[$name]}"
+
+  session_exists "$name" && return 1
+
+  if [[ ! -d "$dir" ]]; then
+    echo "  ✗ $name — directory not found: $dir" >&2
+    return 2
+  fi
+
+  local windows="${WINDOWS[$name]:-}"
+  if [[ -n "$windows" ]]; then
+    read -ra win_list <<< "$windows"
+    tmux new-session -d -s "$name" -n "${win_list[0]}" -c "$dir"
+    for win in "${win_list[@]:1}"; do
+      tmux new-window -t "$name" -n "$win" -c "$dir"
+    done
+  else
+    tmux new-session -d -s "$name" -c "$dir"
+  fi
+  return 0
+}
+
+# Attach to a single session.
+# Uses -CC under iTerm2 (session windows become native tabs).
+attach_session() {
+  local name="$1"
+  if [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]]; then
+    exec tmux -CC attach -t "$name"
+  elif [[ -n "${TMUX:-}" ]]; then
+    tmux switch-client -t "$name"
+  else
+    exec tmux attach -t "$name"
+  fi
+}
+
+# ── Commands ────────────────────────────────────────────────────────
+
+cmd_bootstrap() {
+  echo "Creating sessions..."
   local created=0
-  for name in "${ORDER[@]}"; do
-    dir="${SESSIONS[$name]}"
-    if session_exists "$name"; then
-      echo "  ✓ $name (exists)"
-    elif [[ ! -d "$dir" ]]; then
-      echo "  ✗ $name — directory not found: $dir"
-    else
+  for name in "${AUTOSTART[@]}"; do
+    if ensure_session "$name"; then
       local windows="${WINDOWS[$name]:-}"
-      if [[ -n "$windows" ]]; then
-        read -ra win_list <<< "$windows"
-        tmux new-session -d -s "$name" -n "${win_list[0]}" -c "$dir"
-        for win in "${win_list[@]:1}"; do
-          tmux new-window -t "$name" -n "$win" -c "$dir"
-        done
-        echo "  + $name → $dir (${win_list[*]})"
-      else
-        tmux new-session -d -s "$name" -c "$dir"
-        echo "  + $name → $dir"
-      fi
+      echo "  + $name → ${SESSIONS[$name]} (${windows})"
       created=$((created + 1))
+    else
+      echo "  ✓ $name (exists)"
     fi
   done
   echo ""
   echo "$created session(s) created."
+  echo ""
+
+  echo "Attaching to dev..."
+  echo "  (open other sessions: Cmd+N then tmux-bootstrap --start <name>)"
+  attach_session "dev"
 }
 
-list_sessions() {
-  for name in "${ORDER[@]}"; do
-    dir="${SESSIONS[$name]}"
+cmd_start() {
+  local name="$1"
+  if [[ -z "${SESSIONS[$name]+x}" ]]; then
+    echo "Unknown session: $name" >&2
+    echo "Available: ${ORDER[*]}" >&2
+    exit 1
+  fi
+
+  if ensure_session "$name"; then
+    local windows="${WINDOWS[$name]:-}"
+    echo "Created $name (${windows})"
+  else
+    echo "$name already running"
+  fi
+
+  attach_session "$name"
+}
+
+cmd_list() {
+  echo "Autostart:"
+  for name in "${AUTOSTART[@]}"; do
     if session_exists "$name"; then
       echo "  ✓ $name (running)"
-    elif [[ ! -d "$dir" ]]; then
-      echo "  ✗ $name — directory not found: $dir"
     else
-      local windows="${WINDOWS[$name]:-}"
-      if [[ -n "$windows" ]]; then
-        echo "  · $name → $dir ($windows)"
-      else
-        echo "  · $name → $dir"
-      fi
+      echo "  · $name → ${SESSIONS[$name]}"
+    fi
+  done
+  echo ""
+  echo "Available (use --start <name>):"
+  for name in "${ORDER[@]}"; do
+    is_autostart "$name" && continue
+    if session_exists "$name"; then
+      echo "  ✓ $name (running)"
+    else
+      echo "  · $name → ${SESSIONS[$name]} (${WINDOWS[$name]:-})"
     fi
   done
 }
 
 usage() {
-  echo "Usage: tmux-bootstrap [--list | --help]"
+  echo "Usage: tmux-bootstrap [--list | --start <name> | --help]"
   echo ""
-  echo "  (no args)  Create sessions and attach"
-  echo "  --list     Show session status without creating"
-  echo "  --help     Show this message"
+  echo "  (no args)       Create autostart sessions (mind, dev) and attach"
+  echo "  --start <name>  Create and attach a single session"
+  echo "  --list          Show all sessions and their status"
+  echo "  --help          Show this message"
 }
 
 # ── Main ────────────────────────────────────────────────────────────
 
 case "${1:-}" in
   --list)
-    list_sessions
-    exit 0
+    cmd_list
+    ;;
+  --start)
+    [[ -z "${2:-}" ]] && { echo "Usage: tmux-bootstrap --start <name>" >&2; exit 1; }
+    cmd_start "$2"
     ;;
   --help|-h)
     usage
-    exit 0
     ;;
   "")
-    ;; # fall through to create + attach
+    cmd_bootstrap
+    ;;
   *)
     echo "Unknown option: $1" >&2
     usage >&2
     exit 1
     ;;
 esac
-
-echo "Creating sessions..."
-create_sessions
-
-echo ""
-if [[ "${TERM_PROGRAM:-}" == "iTerm.app" ]]; then
-  echo "Attaching via iTerm2 integration..."
-  echo "  (Each session becomes a native iTerm2 window)"
-  for name in "${ORDER[@]}"; do
-    if session_exists "$name"; then
-      tmux -CC attach -t "$name" &
-    fi
-  done
-  wait
-  exit 0
-fi
-
-if [[ -n "${TMUX:-}" ]]; then
-  echo "Inside tmux: switching client to mind"
-  exec tmux switch-client -t mind
-fi
-
-echo "Attaching to mind..."
-exec tmux attach -t mind
