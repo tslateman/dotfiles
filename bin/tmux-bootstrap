@@ -64,9 +64,9 @@ validate_config
 session_exists() { tmux has-session -t "$1" 2>/dev/null; }
 
 is_autostart() {
-  local target="$1"
-  for name in "${AUTOSTART[@]}"; do
-    [[ "$name" == "$target" ]] && return 0
+  local target="$1" entry
+  for entry in "${AUTOSTART[@]}"; do
+    [[ "$entry" == "$target" ]] && return 0
   done
   return 1
 }
