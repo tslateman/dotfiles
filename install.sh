@@ -22,7 +22,7 @@ fail() { echo -e "  ${RED}✗${RESET} $1"; }
 echo -e "${BOLD}Checking prerequisites${RESET}"
 missing=0
 
-for cmd in git go python3; do
+for cmd in git python3; do
   if command -v "$cmd" &>/dev/null; then
     ok "$cmd ($(command -v "$cmd"))"
   else
@@ -38,7 +38,7 @@ if [[ $missing -gt 0 ]]; then
 fi
 
 # Optional tools — warn but continue
-for cmd in claude markdownlint; do
+for cmd in claude markdownlint go; do
   if command -v "$cmd" &>/dev/null; then
     ok "$cmd ($(command -v "$cmd"))"
   else
@@ -69,10 +69,10 @@ else
       ok "$pkg (installed)"
     else
       echo -n "  Installing $pkg..."
-      if brew install "$pkg" --quiet 2>/dev/null; then
+      if brew_out=$(brew install "$pkg" --quiet 2>&1); then
         ok "$pkg"
       else
-        warn "$pkg — install failed, continuing"
+        warn "$pkg — install failed${brew_out:+: $brew_out}"
       fi
     fi
   done
@@ -84,8 +84,17 @@ if [[ "$(uname)" == "Darwin" ]]; then
   echo -e "${BOLD}Setting macOS defaults${RESET}"
 
   # Stop desktop reordering based on recent use
-  defaults write com.apple.dock mru-spaces -bool false && killall Dock
+  defaults write com.apple.dock mru-spaces -bool false && { killall Dock || true; }
   ok "Dock: disable desktop auto-reorder"
+
+  # iTerm2: tmux -CC integration
+  defaults write com.googlecode.iterm2 OpenTmuxWindowsIn -int 2
+  defaults write com.googlecode.iterm2 AutoHideTmuxClientSession -bool true
+  defaults write com.googlecode.iterm2 ClosingTmuxTabKillsTmuxWindows -bool true
+  defaults write com.googlecode.iterm2 ClosingTmuxWindowKillsTmuxWindows -bool true
+  defaults write com.googlecode.iterm2 TmuxSyncClipboard -bool true
+  defaults write com.googlecode.iterm2 TmuxUsesDedicatedProfile -bool true
+  ok "iTerm2: tmux -CC integration configured"
 fi
 
 # ============================================================
@@ -108,7 +117,7 @@ symlink() {
     # Existing file or symlink that differs — back up and prompt
     if [[ -e "$dest" ]] || [[ -L "$dest" ]]; then
         echo "  $1 already exists at $dest"
-        read -rp "  Overwrite? Existing file will be backed up. [y/N] " answer
+        read -rp "  Overwrite? Existing file will be backed up. [y/N] " answer || true
         if [[ ! "$answer" =~ ^[Yy]$ ]]; then
             warn "$1 (skipped)"
             return
@@ -129,6 +138,7 @@ symlink .bashrc
 symlink .p10k.zsh
 symlink .gitconfig
 symlink .gitleaks.toml
+symlink .tmux.conf
 symlink .warprc
 symlink .vuerc
 symlink .serverlessrc
@@ -162,10 +172,11 @@ clone_if_missing() {
     mkdir -p "$(dirname "$dest")"
     if [[ ! -d "$dest" ]]; then
         echo -n "  Cloning $(basename "$dest")..."
-        if git clone --depth 1 "$repo" "$dest" --quiet 2>/dev/null; then
+        local clone_out
+        if clone_out=$(git clone --depth 1 "$repo" "$dest" --quiet 2>&1); then
             ok "$(basename "$dest")"
         else
-            warn "$(basename "$dest") — clone failed"
+            warn "$(basename "$dest") — clone failed${clone_out:+: $clone_out}"
         fi
     else
         ok "$(basename "$dest") (already present)"
@@ -175,6 +186,11 @@ clone_if_missing() {
 clone_if_missing https://github.com/romkatv/powerlevel10k "$ZSH_CUSTOM/themes/powerlevel10k"
 clone_if_missing https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
 clone_if_missing https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+
+# --- tmux plugins ---
+echo ""
+echo -e "${BOLD}Installing tmux plugins${RESET}"
+clone_if_missing https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
 # --- Git hooks ---
 echo ""
@@ -195,7 +211,18 @@ echo -e "${BOLD}Cloning ecosystem repos${RESET}"
 
 GH_ORG="${GH_ORG:-tslateman}"
 GITHUB="git@github.com:$GH_ORG"
-CORE_REPOS=(lore praxis tutor)
+CORE_REPOS=(lore praxis tutor cli shipyard)
+
+# --- Check GitHub SSH access ---
+echo ""
+echo -e "${BOLD}Checking GitHub SSH access${RESET}"
+ssh_result=$(ssh -T git@github.com -o ConnectTimeout=5 -o StrictHostKeyChecking=accept-new 2>&1 || true)
+if echo "$ssh_result" | grep -q "successfully authenticated"; then
+  ok "GitHub SSH"
+else
+  warn "GitHub SSH not configured — repo clones may fail"
+  warn "Set up SSH keys: https://docs.github.com/en/authentication/connecting-to-github-with-ssh"
+fi
 
 clone_ok=0
 clone_fail=0
@@ -206,13 +233,13 @@ for repo in "${CORE_REPOS[@]}"; do
     clone_ok=$((clone_ok + 1))
   else
     echo -n "  Cloning $repo..."
-    if git clone "$GITHUB/$repo.git" "$ROOT/$repo" --quiet 2>/dev/null; then
+    clone_out=$(git clone "$GITHUB/$repo.git" "$ROOT/$repo" --quiet 2>&1) && {
       ok "$repo"
       clone_ok=$((clone_ok + 1))
-    else
-      fail "$repo — clone failed"
+    } || {
+      fail "$repo — clone failed${clone_out:+: $clone_out}"
       clone_fail=$((clone_fail + 1))
-    fi
+    }
   fi
 done
 
@@ -239,36 +266,22 @@ fi
 echo ""
 echo -e "${BOLD}Installing ecosystem git hooks${RESET}"
 
-for project in tutor; do
+for project in "${CORE_REPOS[@]}"; do
   if [[ -f "$ROOT/$project/Makefile" ]]; then
     if make -C "$ROOT/$project" setup &>/dev/null; then
       ok "$project hooks installed"
     else
       warn "$project — make setup failed"
     fi
-  else
-    warn "$project/ — no Makefile found, skipping hooks"
   fi
 done
-
-# --- ~/.mirror/ structure ---
-echo ""
-echo -e "${BOLD}Initializing ~/.mirror${RESET}"
-
-if [[ -d "$HOME/.mirror" ]]; then
-  ok "~/.mirror (already present)"
-else
-  mkdir -p "$HOME/.mirror/principles"
-  touch "$HOME/.mirror/judgments.yaml" "$HOME/.mirror/patterns.yaml"
-  ok "~/.mirror created"
-fi
 
 # --- Vale sync ---
 echo ""
 echo -e "${BOLD}Syncing vale${RESET}"
 
 if command -v vale &>/dev/null; then
-  for project in tutor; do
+  for project in "${CORE_REPOS[@]}"; do
     if [[ -f "$ROOT/$project/.vale.ini" ]]; then
       if vale --config "$ROOT/$project/.vale.ini" sync &>/dev/null; then
         ok "$project vale synced"
