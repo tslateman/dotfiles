@@ -192,6 +192,33 @@ echo ""
 echo -e "${BOLD}Installing tmux plugins${RESET}"
 clone_if_missing https://github.com/tmux-plugins/tpm "$HOME/.tmux/plugins/tpm"
 
+# --- Claude Code statusline ---
+echo ""
+echo -e "${BOLD}Installing Claude Code statusline${RESET}"
+STATUSLINE_SRC="$DOTFILES/.claude/statusline-command.sh"
+STATUSLINE_DEST="$HOME/.claude/statusline-command.sh"
+if [[ -f "$STATUSLINE_SRC" ]]; then
+  cp "$STATUSLINE_SRC" "$STATUSLINE_DEST"
+  chmod +x "$STATUSLINE_DEST"
+  ok "statusline-command.sh installed"
+
+  SETTINGS="$HOME/.claude/settings.json"
+  if [[ -f "$SETTINGS" ]]; then
+    if jq -e '.statusLine' "$SETTINGS" &>/dev/null; then
+      ok "settings.json statusLine already configured"
+    else
+      tmp=$(mktemp)
+      jq '.statusLine = {"type": "command", "command": "bash ~/.claude/statusline-command.sh"}' \
+        "$SETTINGS" > "$tmp" && mv "$tmp" "$SETTINGS"
+      ok "settings.json statusLine configured"
+    fi
+  else
+    warn "~/.claude/settings.json not found — run Claude Code once first, then re-run install"
+  fi
+else
+  warn "statusline-command.sh not found in dotfiles — skipping"
+fi
+
 # --- Git hooks ---
 echo ""
 echo -e "${BOLD}Installing dotfiles git hooks${RESET}"

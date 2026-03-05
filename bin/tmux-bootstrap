@@ -22,13 +22,14 @@ declare -A SESSIONS=(
   [yard]="$HOME/dev"
   [jam]="$HOME/dev"
   [studio]="$HOME/dev"
+  [aicli]="$HOME/dev"
 )
 
 # Sessions to create and attach on bootstrap (subset of SESSIONS)
 AUTOSTART=(mind dev)
 
 # All sessions in preferred tab order (iTerm2 renders in creation order)
-ORDER=(mind dev yard trek matrix jam studio)
+ORDER=(mind dev yard trek matrix jam studio aicli)
 
 # ── Windows ─────────────────────────────────────────────────────────
 # session → space-separated window names (first window is created with session)
@@ -40,6 +41,15 @@ declare -A WINDOWS=(
   [yard]="LORE PRAXIS COUNCIL FLEETS FORGE"
   [jam]="LEAD BASS DRUMS KEYS VAMP"
   [studio]="TRACK MIX BOOTH BOARD TAKE"
+  [aicli]="OPENCODE CLAUDE GEMINI COPILOT"
+)
+
+# window-specific commands: session:window → command
+declare -A COMMANDS=(
+  [aicli:OPENCODE]="opencode"
+  [aicli:CLAUDE]="claude"
+  [aicli:GEMINI]="gemini"
+  [aicli:COPILOT]="copilot"
 )
 
 # ── Validation ──────────────────────────────────────────────────────
@@ -88,8 +98,19 @@ ensure_session() {
   if [[ -n "$windows" ]]; then
     read -ra win_list <<< "$windows"
     tmux new-session -d -s "$name" -n "${win_list[0]}" -c "$dir"
+    
+    # Run command in first window if configured
+    local first_win="${win_list[0]}"
+    if [[ -n "${COMMANDS["$name:$first_win"]:-}" ]]; then
+      tmux send-keys -t "$name:$first_win" "${COMMANDS["$name:$first_win"]}" C-m
+    fi
+
+    # Create other windows and run their commands
     for win in "${win_list[@]:1}"; do
       tmux new-window -t "$name" -n "$win" -c "$dir"
+      if [[ -n "${COMMANDS["$name:$win"]:-}" ]]; then
+        tmux send-keys -t "$name:$win" "${COMMANDS["$name:$win"]}" C-m
+      fi
     done
   else
     tmux new-session -d -s "$name" -c "$dir"

@@ -124,8 +124,11 @@ if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
   . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
 fi
 
+# Ensure gemini and copilot are available from nvm bin
+export PATH="$HOME/.nvm/versions/node/v24.1.0/bin:$PATH"
+
 # Defer initialization of nvm until nvm, node or a node-dependent command is
-# run. Ensure this block is only run once if .bashrc gets sourced multiple times
+# run. Ensure this block is only run once if .zshrc gets sourced multiple times
 # by checking whether __init_nvm is a function.
 if [ -s "$HOME/.nvm/nvm.sh" ] && [ ! "$(whence -w __init_nvm)" = "__init_nvm: function" ]; then
   export NVM_DIR="$HOME/.nvm"
@@ -174,7 +177,7 @@ alias zshconfig="mate ~/.zshrc"
 
 # alias nvim='env -u VIMINIT nvim'
 alias nv='env -u VIMINIT nvim'
-alias python='python3'  # TODO: remove — pyenv shims handle this
+# alias python='python3'  # pyenv shims handle this
 alias py='python'
 alias oldvi='vi'
 alias vi='vim'
@@ -182,9 +185,13 @@ alias vi='vim'
 
 # personal projects
 alias mt='molt'
-alias mon='lore'
-alias ml='lore list'
-alias ms='lore status'
+alias mon='monarch'
+alias ml='monarch list'
+alias ms='monarch status'
+alias lore='~/dev/lore/lore.sh'
+alias neo-sync='~/dev/neo/scripts/sync.sh'
+alias neo-promote='~/dev/neo/scripts/promote.sh'
+alias neo-start='~/dev/neo/scripts/start.sh'
 
 # Remove duplicate history
 setopt EXTENDED_HISTORY
@@ -235,64 +242,72 @@ export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.orbstack/bin:$PATH"
 
 # zoxide — frecency-based directory jumping
-(( $+commands[zoxide] )) && eval "$(zoxide init zsh)"
+eval "$(zoxide init zsh)"
 
-# wm — tmux workspace manager (uses iTerm native integration when available)
+# fzf — fuzzy finder for files, history, branches
+source <(fzf --zsh)
+
+# atuin — searchable shell history with per-project filtering
+eval "$(atuin init zsh)"
+
+# wm — tmux session per project, named from wd bookmarks
 wm() {
-  local name="$1"
-  if [[ -z "$name" ]]; then
-    if [[ -n "$TMUX" ]]; then
-      tmux list-sessions
-    else
-      echo "usage: wm <bookmark>"
-    fi
-    return
-  fi
-
-  # Resolve directory from wd bookmarks
+  local name="${1:?Usage: wm <project>}"
   local dir
-  dir=$(awk -F: -v name="$name" '$1 == name { print $2; exit }' ~/.warprc 2>/dev/null)
-  dir="${dir/#\~/$HOME}"
 
-  if [[ -z "$dir" || ! -d "$dir" ]]; then
-    echo "wm: no wd bookmark '$name' (or directory missing)"
+  dir=$(sed -n "s/^${name}:~//p" ~/.warprc)
+  if [[ -z "$dir" ]]; then
+    echo "No wd bookmark named '${name}'"
     return 1
   fi
+  dir="$HOME$dir"
+
+  local cc=()
+  [[ "$TERM_PROGRAM" == "iTerm.app" ]] && cc=(-CC)
 
   if [[ -n "$TMUX" ]]; then
-    # Already inside tmux — switch or create
     if tmux has-session -t "=$name" 2>/dev/null; then
       tmux switch-client -t "=$name"
     else
       tmux new-session -d -s "$name" -c "$dir"
       tmux switch-client -t "=$name"
     fi
-  elif [[ "${TERM_PROGRAM:-}" == "iTerm.app" || "${LC_TERMINAL:-}" == "iTerm2" ]]; then
-    # iTerm — use -CC for native tab/split integration
-    if tmux has-session -t "=$name" 2>/dev/null; then
-      tmux -CC attach -t "=$name"
-    else
-      tmux -CC new-session -s "$name" -c "$dir"
-    fi
   else
-    # Plain terminal — attach or create
     if tmux has-session -t "=$name" 2>/dev/null; then
-      tmux attach -t "=$name"
+      tmux "${cc[@]}" attach-session -t "=$name"
     else
-      tmux new-session -s "$name" -c "$dir"
+      tmux "${cc[@]}" new-session -s "$name" -c "$dir"
     fi
   fi
 }
 
-# Tab completion for wm — completes from wd bookmarks
 _wm() {
-  local -a bookmarks
-  bookmarks=(${(f)"$(awk -F: '{ print $1 }' ~/.warprc 2>/dev/null)"})
-  _describe 'bookmark' bookmarks
+  local bookmarks
+  bookmarks=($(awk -F: '{print $1}' ~/.warprc))
+  compadd -a bookmarks
 }
 compdef _wm wm
 
 # Local secrets (not committed)
 [[ -f ~/.env ]] && source ~/.env
+
+# add praxis cli
+export PATH="$HOME/dev/praxis/bin:$PATH"
+
+# add shipyard cli
+export PATH="$HOME/dev/shipyard/bin:$PATH"
+
+
+# Added by Antigravity
+export PATH="/Users/tslater/.antigravity/antigravity/bin:$PATH"
+
+# lore — LORE_DATA_DIR moved to ~/.zshenv (runs for non-interactive shells too)
+
+# bun completions
+[ -s "/Users/tslater/.bun/_bun" ] && source "/Users/tslater/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
 export CANARY_DIR=/Users/tslater/dev/canary
