@@ -1,0 +1,20 @@
+#!/bin/bash
+# Run dev-dirty and send a cmux notification for each dirty repo.
+# Fires one notification per dirty repo so workspace tabs light up individually.
+
+dirty_output=$("$HOME/bin/dev-dirty")
+
+if [ -z "$dirty_output" ]; then
+    exit 0
+fi
+
+# Parse header lines: === <name> (<count> changes) ===
+while IFS= read -r line; do
+    if [[ "$line" =~ ^"=== "(.+)" ("([0-9]+)" changes) ===" ]]; then
+        name="${BASH_REMATCH[1]}"
+        count="${BASH_REMATCH[2]}"
+        cmux notify \
+            --title "Dirty: $name" \
+            --body "$count uncommitted change$([ "$count" -eq 1 ] && echo '' || echo 's')"
+    fi
+done <<< "$dirty_output"

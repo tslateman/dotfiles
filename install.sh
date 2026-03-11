@@ -159,6 +159,8 @@ symlink bin/dev-recent
 symlink bin/iterm-edit
 symlink bin/iterm-view
 symlink bin/tmux-bootstrap
+symlink bin/cmux-bootstrap
+symlink bin/dev-dirty-notify
 
 # --- oh-my-zsh plugins & theme ---
 echo ""

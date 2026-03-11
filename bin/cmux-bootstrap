@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# cmux-bootstrap — create cmux workspaces for each project in ~/dev/mani.yaml.
+#
+# One workspace per project, named by project name, cwd set to the project path.
+# Skips projects that already have a workspace with that name. Idempotent.
+#
+# Usage:
+#   cmux-bootstrap             # create workspaces for all projects
+#   cmux-bootstrap --list      # show projects and their workspace status
+#   cmux-bootstrap --help      # show this message
+
+set -euo pipefail
+
+MANI_YAML="$HOME/dev/mani.yaml"
+DEV_DIR="$HOME/dev"
+
+command -v cmux &>/dev/null || { echo "cmux not found" >&2; exit 1; }
+command -v yq   &>/dev/null || { echo "yq not found" >&2; exit 1; }
+[[ -f "$MANI_YAML" ]] || { echo "mani.yaml not found: $MANI_YAML" >&2; exit 1; }
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+
+# Print the set of existing workspace titles (one per line).
+existing_workspace_titles() {
+  cmux list-workspaces 2>/dev/null \
+    | awk '
+        {
+          # Fields: [*] workspace:N [<icon>] <title...> [selected]
+          # Find the workspace:N field, then collect everything after it,
+          # skipping a leading icon (non-ASCII / single glyph <= 4 bytes wide)
+          # and dropping a trailing "[selected]".
+          ws_idx = 0
+          for (i = 1; i <= NF; i++) {
+            if ($i ~ /^workspace:/) { ws_idx = i; break }
+          }
+          if (ws_idx == 0) next
+
+          # Start one field after workspace:N
+          start = ws_idx + 1
+
+          # Skip a leading icon field if it looks like a spinner/symbol
+          # (non-ASCII or punctuation; ASCII word chars are title text).
+          if (start <= NF && $start !~ /^[A-Za-z0-9_-]/) start++
+
+          title = ""
+          for (i = start; i <= NF; i++) {
+            if ($i == "[selected]") break
+            title = (title == "") ? $i : title " " $i
+          }
+          if (title != "") print title
+        }
+      '
+}
+
+# Return 0 if a workspace named $1 already exists.
+workspace_exists() {
+  local name="$1"
+  existing_workspace_titles | grep -qxF "$name"
+}
+
+# Create a workspace named $1 with cwd $2.
+# Prints "created" or "skipped" result.
+ensure_workspace() {
+  local name="$1"
+  local dir="$2"
+
+  if workspace_exists "$name"; then
+    echo "  skip  $name"
+    return 0
+  fi
+
+  if [[ ! -d "$dir" ]]; then
+    echo "  miss  $name  (directory not found: $dir)"
+    return 0
+  fi
+
+  # new-workspace inherits the caller's cwd, so cd first in a subshell.
+  local ws_id
+  ws_id=$(cd "$dir" && cmux new-workspace 2>&1 | awk '{print $NF}')
+
+  if [[ -z "$ws_id" ]]; then
+    echo "  fail  $name  (cmux new-workspace returned no ID)" >&2
+    return 1
+  fi
+
+  cmux rename-workspace --workspace "$ws_id" "$name" &>/dev/null
+  # cd the shell inside the workspace to the project directory.
+  cmux send --workspace "$ws_id" "cd $(printf '%q' "$dir")"$'\n' &>/dev/null
+
+  echo "  create  $name  →  $dir"
+}
+
+# ── Project list from mani.yaml ───────────────────────────────────────────────
+
+# Emit lines of "name\tpath" for every project in mani.yaml.
+project_entries() {
+  yq e '.projects | to_entries[] | .key + "\t" + .value.path' "$MANI_YAML"
+}
+
+# ── Commands ─────────────────────────────────────────────────────────────────
+
+cmd_bootstrap() {
+  echo "Bootstrapping cmux workspaces from $MANI_YAML..."
+  echo ""
+
+  local created=0 skipped=0 missing=0
+
+  while IFS=$'\t' read -r name rel_path; do
+    local dir="$DEV_DIR/$rel_path"
+    local result
+    result=$(ensure_workspace "$name" "$dir")
+    echo "$result"
+    case "$result" in
+      *create*) created=$((created + 1)) ;;
+      *skip*)   skipped=$((skipped + 1)) ;;
+      *miss*)   missing=$((missing + 1)) ;;
+    esac
+  done < <(project_entries)
+
+  echo ""
+  echo "Done. $created created, $skipped skipped, $missing missing."
+}
+
+cmd_list() {
+  echo "Projects in $MANI_YAML:"
+  echo ""
+
+  local titles
+  titles=$(existing_workspace_titles)
+
+  while IFS=$'\t' read -r name rel_path; do
+    local dir="$DEV_DIR/$rel_path"
+    local status
+    if echo "$titles" | grep -qxF "$name"; then
+      status="workspace exists"
+    elif [[ ! -d "$dir" ]]; then
+      status="directory missing"
+    else
+      status="no workspace"
+    fi
+    printf "  %-30s  %s\n" "$name" "$status"
+  done < <(project_entries)
+}
+
+usage() {
+  echo "Usage: cmux-bootstrap [--list | --help]"
+  echo ""
+  echo "  (no args)  Create cmux workspaces for all projects in ~/dev/mani.yaml"
+  echo "  --list     Show projects and their workspace status"
+  echo "  --help     Show this message"
+}
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+case "${1:-}" in
+  --list)
+    cmd_list
+    ;;
+  --help | -h)
+    usage
+    ;;
+  "")
+    cmd_bootstrap
+    ;;
+  *)
+    echo "Unknown option: $1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

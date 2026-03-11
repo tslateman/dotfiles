@@ -61,7 +61,17 @@
     "defaultMode": "default"
   },
   "hooks": {
-    "SessionStart": [],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmux claude-hook session-start 2>/dev/null || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
@@ -91,7 +101,28 @@
         ]
       }
     ],
-    "Stop": []
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmux claude-hook notification 2>/dev/null || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/cmux-notify.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   },
   "statusLine": {
     "type": "command",
