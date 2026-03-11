@@ -122,6 +122,28 @@
           }
         ]
       }
+    ],
+    "PostToolUseFailure": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/constraint-capture-failure.sh 2>/dev/null || true",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/constraint-detect-correction.sh 2>/dev/null || true",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
