@@ -8,3 +8,4 @@ for dir in ~/dev/*/ ~/dev/forge/*/; do
     log=$(git -C "$dir" log --oneline --since="$days days ago" --no-merges 2>/dev/null | head -5)
     [ -n "$log" ] && echo "=== $name ===" && echo "$log" && echo
 done
+exit 0
