@@ -4,6 +4,3 @@
 
 -- Enable filetype detection
 vim.g.do_filetype_lua = true
-
--- UI theme preference (used by some plugins)
-vim.g.ui_theme = "onedark"
